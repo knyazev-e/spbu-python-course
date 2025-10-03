@@ -32,10 +32,12 @@ if execution_flag:
     else:
         raise ValueError("The vectors must be the same length to perform addition.")
 
+    vector_length: float = 0.0
+
     if len(v) == 0:
-        vector_length: float = 0.0
+        vector_length = 0.0
     else:
-        vector_length: float = math.sqrt(sum(v[i] ** 2 for i in range(len(v))))
+        vector_length = math.sqrt(sum(v[i] ** 2 for i in range(len(v))))
 
     if len(v1) == len(v2):
         try:
