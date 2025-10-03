@@ -1,42 +1,63 @@
-import pytest
+import importlib
 import math
+import pytest
 
-from project.task1.vectors import scalar_multiplication, vector_sum, length, eval_angle
+import project.task1.vectors as vectors
 
 
 def scalar_multiplication_test():
-    v1 = [1, 2, 3]
-    v2 = [4, 5, 6]
-    assert scalar_multiplication(v1, v2) == 32
+    vectors.v1 = [1, 2, 3]
+    vectors.v2 = [4, 5, 6]
+    vectors.execution_flag = True
+    importlib.reload(vectors)
+    assert vectors.scalar_multiplication_result == 32
 
 
 def scalar_multiplication_error_test():
+    vectors.v1 = [1, 2]
+    vectors.v2 = [1]
+    vectors.execution_flag = True
     with pytest.raises(ValueError):
-        scalar_multiplication([1, 2], [1])
+        importlib.reload(vectors)
 
 
 def vector_sum_test():
-    v1 = [1, 2, 3]
-    v2 = [4, 5, 6]
-    assert vector_sum(v1, v2) == [5, 7, 9]
+    vectors.v1 = [1, 2, 3]
+    vectors.v2 = [4, 5, 6]
+    vectors.execution_flag = True
+    importlib.reload(vectors)
+    assert vectors.vector_sum_result == [5, 7, 9]
 
 
 def vector_sum_error_test():
+    vectors.v1 = [1, 2]
+    vectors.v2 = [1]
+    vectors.execution_flag = True
     with pytest.raises(ValueError):
-        vector_sum([1, 2], [1])
+        importlib.reload(vectors)
 
 
 def length_test():
-    assert math.isclose(length([3, 4]), 5.0)
-    assert length([]) == 0.0
+    vectors.v = [3, 4]
+    vectors.execution_flag = True
+    importlib.reload(vectors)
+    assert math.isclose(vectors.length, 5.0)
+    vectors.v = []
+    importlib.reload(vectors)
+    assert vectors.length == 0.0
 
 
 def angle_calculation_test():
-    v1 = [1, 0]
-    v2 = [0, 1]
-    assert math.isclose(eval_angle(v1, v2), math.pi / 2)
+    vectors.v1 = [1, 0]
+    vectors.v2 = [0, 1]
+    vectors.execution_flag = True
+    importlib.reload(vectors)
+    assert math.isclose(vectors.angle, math.pi / 2)
 
 
 def angle_calculation_error_test():
+    vectors.v1 = [1]
+    vectors.v2 = [1, 2]
+    vectors.execution_flag = True
     with pytest.raises(ValueError):
-        eval_angle([1], [1, 2])
+        importlib.reload(vectors)
