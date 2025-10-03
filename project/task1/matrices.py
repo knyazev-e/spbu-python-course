@@ -13,9 +13,9 @@ Raises ValueError on invalid inputs.
 
 from typing import List
 
-m = [[]]
-m1 = [[]]
-m2 = [[]]
+m: List[List[float]] = [[]]
+m1: List[List[float]] = [[]]
+m2: List[List[float]] = [[]]
 execution_flag = False
 
 if execution_flag:
