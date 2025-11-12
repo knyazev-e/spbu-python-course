@@ -33,18 +33,16 @@ def test_wrap_result_parameterized():
 @pytest.mark.parametrize(
     "operations, expected",
     [
-        ([lambda d: map(lambda x: x + 1, d)], [2, 3, 4]),
-        ([lambda d: filter(lambda x: x % 2 == 0, d)], [2]),
-        (
-            [lambda d: map(lambda x: x * 2, d), lambda d: filter(lambda x: x > 3, d)],
-            [4, 6],
-        ),
+        ([lambda x: x + 1], [2, 3, 4]),
+        ([lambda x: x if x % 2 == 0 else None], [2]),
+        ([lambda x: x * 2, lambda x: x if x > 3 else None], [4, 6]),
     ],
 )
 def test_apply_function(operations, expected):
     data = [1, 2, 3]
     result = apply_function(data, *operations)
-    assert list(result) == expected
+    filtered_result = [x for x in result if x is not None]
+    assert filtered_result == expected
 
 
 def test_custom_functions_double():
@@ -55,16 +53,21 @@ def test_custom_functions_double():
 
 def test_custom_functions_is_even():
     data = [1, 2, 3]
-    result = apply_function(data, lambda y: map(is_even, y))
+    result = apply_function(data, lambda x: x if is_even(x) else None)
+    filtered_result = [x for x in result if x is not None]
+    assert filtered_result == [2]
+
+
+def test_custom_functions_is_even_map():
+    data = [1, 2, 3]
+    result = apply_function(data, is_even)
     assert list(result) == [False, True, False]
 
 
 def test_multiple_custom_functions():
-    data = [1, 2, 3, 4, 5]
-    result = apply_function(
-        data, lambda d: filter(is_even, d), double, compound_expression
-    )
-    assert list(result) == [28, 36]
+    data = [1, 2, 3]
+    result = apply_function(data, double, compound_expression)
+    assert list(result) == [24, 28, 32]
 
 
 def test_laziness_verification():
@@ -75,7 +78,7 @@ def test_laziness_verification():
         return x * 2
 
     generator = number_generator(1, 5)
-    processed = apply_function(generator, lambda d: map(traced_double_function, d))
+    processed = apply_function(generator, traced_double_function)
 
     assert execution_trace == []
 

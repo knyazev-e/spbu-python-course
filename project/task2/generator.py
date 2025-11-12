@@ -26,23 +26,25 @@ def number_generator(start: int, finish: int) -> Generator[int, None, None]:
         yield i
 
 
-def apply_function(source: Iterable[Any], *operations: Callable[[Any], Any]) -> Any:
+def apply_function(
+    source: Iterable[Any], *operations: Callable[[Any], Any]
+) -> Generator[Any, None, None]:
     """
-    Applies a sequence of operations to the source data.
+    Applies a sequence of operations to each element in the source data.
 
     Args:
         source (Iterable[Any]): Input iterable or generator.
-        *operations (Callable[[Any], Any]): Functions each accepting one argument (iterable or value)
-                                           and returning iterable or final value.
+        *operations (Callable[[Any], Any]): Functions to apply sequentially to each element.
 
-    Returns:
-        Any: The final output after applying all operations.
+    Yields:
+        Any: Transformed elements after applying all operations.
     """
 
-    result: Any = source
-    for operation in operations:
-        result = operation(result)
-    return result
+    for element in source:
+        result = element
+        for operation in operations:
+            result = operation(result)
+        yield result
 
 
 def wrap_result(result: Iterable[Any], collection_type: type = list) -> Iterable[Any]:
