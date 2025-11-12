@@ -10,18 +10,19 @@ This module provides:
 from typing import Any, Callable, Generator, Iterable, List
 
 
-def input_data_generator(input_collection: Iterable[Any]) -> Generator[Any, None, None]:
+def number_generator(start: int, finish: int) -> Generator[int, None, None]:
     """
-    Lazily yields elements from any inputted iterable collection.
+    Lazily generates whole numbers in the specified range.
 
     Args:
-        input_collection (Iterable[Any]): Input collection to yield elements from.
+        start (int): Starting number of the range (inclusive).
+        finish (int): Ending number of the range (inclusive).
 
     Returns:
-        Generator[Any, None, None]: Generator yielding the elements.
+        Generator[int, None, None]: Generator yielding integers from start to finish.
     """
 
-    for i in input_collection:
+    for i in range(start, finish + 1):
         yield i
 
 
@@ -44,15 +45,16 @@ def apply_function(source: Iterable[Any], *operations: Callable[[Any], Any]) -> 
     return result
 
 
-def wrap_result(result: Iterable[Any]) -> List[Any]:
+def wrap_result(result: Iterable[Any], collection_type: type = list) -> Iterable[Any]:
     """
-    Aggregator function that converts a generator or iterable into a list.
+    Aggregator function that converts a generator or iterable into a specified collection type.
 
     Args:
-        data (Iterable[Any]): Input iterable or generator.
+        result (Iterable[Any]): Input iterable or generator to be collected.
+        collection_type (type): Type of collection to aggregate into (defaults to list).
 
     Returns:
-        List[Any]: List containing all elements from the input.
+        Iterable[Any]: Collection of the specified type containing all elements from the input.
     """
 
-    return list(result)
+    return collection_type(result)
