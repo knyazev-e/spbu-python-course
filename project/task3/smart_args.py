@@ -1,6 +1,6 @@
 from typing import Any, Callable
 from copy import deepcopy
-from inspect import signature
+from inspect import signature, Parameter
 
 
 class Evaluated:
@@ -42,27 +42,36 @@ def smart_args(func: Callable[..., Any]) -> Callable[..., Any]:
                 raise ValueError(
                     f"Parameter '{param_name}' cannot use both Evaluated and Isolated at the same time."
                 )
-            if param.kind != param.KEYWORD_ONLY:
-                raise ValueError(
-                    f"smart_args only supports keyword-only arguments. Parameter '{param_name}' is not keyword-only"
-                )
 
-    def wrapper(**kwargs) -> Any:
-        bound = sig.bind_partial()
+    def wrapper(*args, **kwargs) -> Any:
+        bound = sig.bind(*args, **kwargs)
+        provided_args = set(bound.arguments.keys())
         bound.apply_defaults()
-        default_values = bound.arguments
-
-        final_kwargs = default_values.copy()
-        final_kwargs.update(kwargs)
+        final_args = bound.arguments.copy()
 
         for param_name, param in sig.parameters.items():
-            if isinstance(param.default, Evaluated) and param_name not in kwargs:
-                final_kwargs[param_name] = param.default.func()
-            elif isinstance(param.default, Isolated) and param_name not in kwargs:
-                raise TypeError(f"Isolated argument '{param_name}' must be provided.")
-            elif isinstance(param.default, Isolated) and param_name in kwargs:
-                final_kwargs[param_name] = deepcopy(kwargs[param_name])
+            if param.kind in (Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD):
+                continue
 
-        return func(**final_kwargs)
+            if isinstance(param.default, Evaluated) and param_name not in provided_args:
+                final_args[param_name] = param.default.func()
+            elif (
+                isinstance(param.default, Isolated) and param_name not in provided_args
+            ):
+                raise TypeError(f"Isolated argument '{param_name}' must be provided.")
+            elif isinstance(param.default, Isolated) and param_name in provided_args:
+                final_args[param_name] = deepcopy(final_args[param_name])
+
+        positional_args = []
+        keyword_args = {}
+
+        for param_name, param in sig.parameters.items():
+            if param_name in final_args:
+                if param.kind == Parameter.POSITIONAL_ONLY:
+                    positional_args.append(final_args[param_name])
+                else:
+                    keyword_args[param_name] = final_args[param_name]
+
+        return func(*positional_args, **keyword_args)
 
     return wrapper

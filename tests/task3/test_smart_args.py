@@ -5,20 +5,16 @@ from copy import deepcopy
 
 
 def test_isolated():
-    original = {"a": 1}
+    original_dict = {"a": 1}
 
     @smart_args
-    def modify(*, num=10, data=Isolated()):
-        data["b"] = 2
-        return num, data
+    def modify(pos_only, /, pos_or_kw=10, *, kw_only=Isolated()):
+        kw_only["modified"] = pos_only + pos_or_kw
+        return kw_only
 
-    result_num, result_data = modify(data=original, num=5)
-    assert result_num == 5
-    assert result_data == {"a": 1, "b": 2}
-    assert original == {"a": 1}
-
-    result_num, result_data = modify(data=original)
-    assert result_num == 10
+    result = modify(5, 3, kw_only=original_dict)
+    assert result == {"a": 1, "modified": 8}
+    assert original_dict == {"a": 1}
 
 
 def test_evaluated():
@@ -30,22 +26,30 @@ def test_evaluated():
         return counter
 
     @smart_args
-    def get_values(*, static_val=100, dynamic_val=Evaluated(count)):
-        return static_val, dynamic_val
+    def get_values(pos_only, /, pos_or_kw=50, *, dynamic_val=Evaluated(count)):
+        return pos_only, pos_or_kw, dynamic_val
 
-    assert get_values() == (100, 1)
-    assert get_values() == (100, 2)
+    assert get_values(10) == (10, 50, 1)
+    assert get_values(20) == (20, 50, 2)
 
-    assert get_values(static_val=50, dynamic_val=99) == (50, 99)
+    assert get_values(30, 40, dynamic_val=99) == (30, 40, 99)
 
 
 def test_isolated_required():
     @smart_args
-    def func(*, normal=5, required=Isolated()):
-        return normal, required
+    def function(arg1=Isolated(), /, arg2=Isolated(), *, arg3=Isolated()):
+        return arg1, arg2, arg3
 
     with pytest.raises(TypeError):
-        func()
+        function(arg2=3, arg3=0)
+
+    with pytest.raises(TypeError):
+        function(1, 2)
+
+    with pytest.raises(TypeError):
+        function(1, arg3=20)
+
+    assert function(1, 2, arg3=3) == (1, 2, 3)
 
 
 def test_evaluated_errors():
