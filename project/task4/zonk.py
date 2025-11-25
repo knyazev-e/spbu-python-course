@@ -2,6 +2,31 @@ from typing import List, Optional
 import random
 
 
+class Die:
+    """
+    Represents a single six-sided die in the game.
+
+    Attributes:
+        value (int): Current face value (1-6)
+        in_combination (bool): Whether die is currently part of a scoring combination
+    """
+
+    def __init__(self, value: int = 1, in_combination: bool = False):
+        """
+        Initialize a die.
+
+        Args:
+            value: Starting face value (default: 1)
+            in_combination: Whether in scoring combination (default: False)
+        """
+        self.value = value
+        self.in_combination = in_combination
+
+    def set_value(self):
+        """Roll the die to get a new random value between 1 and 6."""
+        self.value = random.randint(1, 6)
+
+
 class Game:
     """
     Main game controller for Zonk.
@@ -25,7 +50,7 @@ class Game:
         self,
         players: List["BotPlayer"],
         combinations: List["Combination"],
-        dice_set: List["Die"],
+        dice_set: List["Die"] = [Die() for _ in range(6)],
         state: bool = False,
         winner: Optional["BotPlayer"] = None,
         current_player: int = 0,
@@ -296,31 +321,6 @@ class BotPlayer:
             for c in combinations:
                 c.possibility_check(dice_set)
             valid_combinations = [c for c in combinations if c.is_possible]
-
-
-class Die:
-    """
-    Represents a single six-sided die in the game.
-
-    Attributes:
-        value (int): Current face value (1-6)
-        in_combination (bool): Whether die is currently part of a scoring combination
-    """
-
-    def __init__(self, value: int = 1, in_combination: bool = False):
-        """
-        Initialize a die.
-
-        Args:
-            value: Starting face value (default: 1)
-            in_combination: Whether in scoring combination (default: False)
-        """
-        self.value = value
-        self.in_combination = in_combination
-
-    def set_value(self):
-        """Roll the die to get a new random value between 1 and 6."""
-        self.value = random.randint(1, 6)
 
 
 class Combination:
