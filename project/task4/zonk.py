@@ -25,7 +25,7 @@ class Game:
         self,
         players: List["BotPlayer"],
         combinations: List["Combination"],
-        dice_set: List["Die"] = None,
+        dice_set: List["Die"],
         state: bool = False,
         winner: Optional["BotPlayer"] = None,
         current_player: int = 0,
@@ -258,7 +258,9 @@ class BotPlayer:
             if self.strategy == "default" or self.strategy == "aggressive":
                 return True
             elif self.strategy == "cautious":
-                return (winner.total_score - self.total_score) <= 1500
+                return (
+                    (winner.total_score - self.total_score) <= 1500 if winner else False
+                )
 
         return False
 
@@ -284,12 +286,12 @@ class BotPlayer:
                     chosen_combo = c
 
             self.round_score += max_cost
-
-            for used_die in chosen_combo.structure:
-                for die in dice_set:
-                    if not die.in_combination and die.value == used_die.value:
-                        die.in_combination = True
-                        break
+            if chosen_combo:
+                for used_die in chosen_combo.structure:
+                    for die in dice_set:
+                        if not die.in_combination and die.value == used_die.value:
+                            die.in_combination = True
+                            break
 
             for c in combinations:
                 c.possibility_check(dice_set)
